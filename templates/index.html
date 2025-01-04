@@ -322,82 +322,90 @@
     });
 
 
-    // Function to fetch results from the selected backend
-    function fetchResults(backendId, queryId, resultListId) {
-        // Show loader
-        $("#left-loader").show();
-
-        fetch('/search_results', {
-            method: 'POST',
-            body: JSON.stringify({ backend: backendId, query_title: queryId }),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            const resultList = $(resultListId);
-            resultList.empty();
-
-            data.results.forEach(recording => {
-                resultList.append(`
-                    <li class="list-group-item">
-                        <strong>${recording.title}</strong>
-                        <div class="audio-details">
-                            Similarity: ${recording.similarity} | Duration: ${recording.duration}s
-                        </div>
-                        <audio controls>
-                            <source src="${recording.file}" type="audio/mpeg">
-                        </audio>
-                    </li>
-                `);
-            });
-        })
-        .catch(error => {
-            console.error("Error fetching results:", error);
-        })
-        .finally(() => {
-            // Hide loader
-            $("#left-loader").hide();
-        });
-    }
-
     $(document).ready(function () {
         let selectedQueryId = null;
+        let leftResultsLoaded = false;
+        let rightResultsLoaded = false;
 
-        // Monitor dropdown changes for Backend 1
+        function updateLoaderState() {
+            // Hide the loader only when both results are loaded
+            if (leftResultsLoaded && rightResultsLoaded) {
+                $("#left-loader").hide();
+            }
+        }
+
+        function fetchResults(backendId, queryId, resultListId, side) {
+            if (side === "left") leftResultsLoaded = false;
+            if (side === "right") rightResultsLoaded = false;
+
+            fetch('/search_results', {
+                method: 'POST',
+                body: JSON.stringify({ backend: backendId, query_title: queryId }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultList = $(resultListId);
+                resultList.empty();
+
+                data.results.forEach(recording => {
+                    resultList.append(`
+                        <li class="list-group-item">
+                            <strong>${recording.title}</strong>
+                            <div class="audio-details">
+                                Similarity: ${recording.similarity} | Duration: ${recording.duration}s
+                            </div>
+                            <audio controls>
+                                <source src="${recording.file}" type="audio/mpeg">
+                            </audio>
+                        </li>
+                    `);
+                });
+            })
+            .catch(error => {
+                console.error("Error fetching results:", error);
+            })
+            .finally(() => {
+                // Update the respective loading state
+                if (side === "left") leftResultsLoaded = true;
+                if (side === "right") rightResultsLoaded = true;
+                updateLoaderState(); // Check if both are loaded
+            });
+        }
+
         $("#left-backend").change(function () {
             const backendId = $(this).val();
             if (selectedQueryId) {
-                fetchResults(backendId, selectedQueryId, "#results-backend-1");
+                $("#left-loader").show(); // Ensure loader is visible before fetching
+                fetchResults(backendId, selectedQueryId, "#results-backend-1", "left");
             }
         });
 
-        // Monitor dropdown changes for Backend 2
         $("#right-backend").change(function () {
             const backendId = $(this).val();
             if (selectedQueryId) {
-                fetchResults(backendId, selectedQueryId, "#results-backend-2");
+                $("#left-loader").show(); // Ensure loader is visible before fetching
+                fetchResults(backendId, selectedQueryId, "#results-backend-2", "right");
             }
         });
 
-        // Update selectedQueryId when a query is submitted
         $(document).on('click', '.submit-query-btn', function () {
             selectedQueryId = $(this).data("query-id");
 
-            // Remove highlights from all items
             $("#recorded-queries-list .list-group-item").removeClass("highlighted-query");
-
-            // Add highlight to the selected item
             $(`#query-${selectedQueryId}`).addClass("highlighted-query");
 
             const leftBackend = $("#left-backend").val();
             const rightBackend = $("#right-backend").val();
 
-            fetchResults(leftBackend, selectedQueryId, "#results-backend-1");
-            fetchResults(rightBackend, selectedQueryId, "#results-backend-2");
+            $("#left-loader").show(); // Show loader before both fetches
+            fetchResults(leftBackend, selectedQueryId, "#results-backend-1", "left");
+            fetchResults(rightBackend, selectedQueryId, "#results-backend-2", "right");
         });
     });
+
 </script>
 
 </body>
