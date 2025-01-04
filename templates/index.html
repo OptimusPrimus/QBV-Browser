@@ -80,6 +80,12 @@
             border-left: 5px solid #dc3545;
             height: 50px;
         }
+
+        /* Highlight style for selected query */
+        .highlighted-query {
+            background-color: #ffeb99 !important;
+            border-left: 5px solid #ffc107 !important;
+        }
     </style>
 </head>
 <body>
@@ -275,6 +281,10 @@
         const leftBackend = $("#left-backend").val();
         const rightBackend = $("#right-backend").val();
 
+        // Highlight selected query
+        $(".recorded-queries-list .list-group-item").removeClass("highlighted-query");
+        $(`#query-${queryId}`).addClass("highlighted-query");
+
         fetch('/search_results', {
             method: 'POST',
             body: JSON.stringify({ query_title: queryId, backend_1: leftBackend, backend_2: rightBackend }),
@@ -371,4 +381,3 @@
 
 </body>
 </html>
-
