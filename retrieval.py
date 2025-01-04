@@ -1,8 +1,8 @@
 import numpy as np
 
-from backend import get_query_files, get_item_files, get_audio_details
+from backend import get_item_files, get_audio_details, build_item_from_path
 import os
-
+import time
 import retrieval_backends.vggish
 import retrieval_backends.panns
 
@@ -11,7 +11,7 @@ def get_retrieval_backends():
 
 # Search logic for different backends
 def rank(backend_id, query, cache):
-
+    start_time = time.time()
     query_path = query['file']
     item_paths = [i['file'] for i in get_item_files()]
 
@@ -29,15 +29,10 @@ def rank(backend_id, query, cache):
     # create return items
     items = []
     for i, f in enumerate(filenames_ranked):
-        d, s = get_audio_details(f)
-        items.append({
-            "title": f.split(os.sep)[-1].split(".")[0],
-            "file": f,
-            "duration": d,
-            "size": s,
-            "similarity": round(similarities[f],2)
-        }
-        )
+        item = build_item_from_path(f).copy()
+        item["similarity"] = round(similarities[f],2)
+        items.append(item)
+    print(f"--- {backend_id} query time: {(time.time() - start_time)} seconds ---" )
     return items
 
 def cache_item_embeddings(backend_id, load_if_exists=True):

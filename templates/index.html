@@ -118,7 +118,7 @@
                             Duration: {{ query.duration }} | Size: {{ query.size }} KB
                         </div>
                     </div>
-                    <audio controls>
+                    <audio preload=none controls>
                         <source src="{{ query.file }}" type="audio/mpeg">
                         Your browser does not support the audio element.
                     </audio>
@@ -185,7 +185,7 @@
                             Duration: {{ item.duration }} | Size: {{ item.size }} KB
                         </div>
                     </div>
-                    <audio controls>
+                    <audio controls preload=none>
                         <source src="{{ item.file }}" type="audio/mpeg">
                         Your browser does not support the audio element.
                     </audio>
@@ -229,7 +229,7 @@
                                     Duration: ${data.duration} | Size: ${data.size} KB
                                 </div>
                             </div>
-                            <audio controls>
+                            <audio preload=none controls>
                                 <source src="${data.file}" type="audio/wav">
                             </audio>
                             <button class="btn btn-danger delete-query-btn" data-query-id="${data.title}">Delete</button>
@@ -311,7 +311,7 @@
                         <div class="audio-details">
                             Similarity: ${recording.similarity} | Duration: ${recording.duration}s
                         </div>
-                        <audio controls>
+                        <audio preload=none controls>
                             <source src="${recording.file}" type="audio/mpeg">
                         </audio>
                     </li>

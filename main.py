@@ -7,14 +7,14 @@ from retrieval import cache_item_embeddings, rank, get_retrieval_backends
 app = Flask(__name__)
 
 # Use the 'static/recorded_queries' directory for saving audio files
-
+MAX_RESULTS = 100
 CACHED_EMBEDDINGS = {b: cache_item_embeddings(b, load_if_exists=True) for b in get_retrieval_backends()}
 
 @app.route('/')
 def index():
     return render_template(
         'index.html',
-        items=get_item_files(),
+        items=get_item_files()[:2000],
         backends=get_retrieval_backends(),
         recorded_queries=get_query_files()
     )
@@ -62,8 +62,8 @@ def search_results():
         CACHED_EMBEDDINGS[backend_2] = cache_item_embeddings(backend_2)
 
     # Get search results from both backends
-    results_backend_1 = rank(backend_1, query, CACHED_EMBEDDINGS[backend_1])
-    results_backend_2 = rank(backend_2, query, CACHED_EMBEDDINGS[backend_2])
+    results_backend_1 = rank(backend_1, query, CACHED_EMBEDDINGS[backend_1])[:MAX_RESULTS]
+    results_backend_2 = rank(backend_2, query, CACHED_EMBEDDINGS[backend_2])[:MAX_RESULTS]
 
     return jsonify({
         "backend_1": results_backend_1,
