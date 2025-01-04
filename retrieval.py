@@ -46,8 +46,7 @@ def cache_item_embeddings(backend_id):
 
     existing_files = set(embeddings.keys())
     actual_files = set([i['file'] for i in get_item_files()])
-
-    to_be_embedded = existing_files - actual_files
+    to_be_embedded = actual_files - existing_files
 
     if len(to_be_embedded) > 0:
         to_be_embedded = list(to_be_embedded)

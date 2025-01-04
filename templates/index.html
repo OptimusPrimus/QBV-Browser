@@ -259,71 +259,6 @@
             });
     });
 
-    // Submit query for search
-    $(document).on('click', '.submit-query-btn', function () {
-        const queryId = $(this).data("query-id");
-        const leftBackend = $("#left-backend").val();
-        const rightBackend = $("#right-backend").val();
-
-        // Highlight selected query
-        $(".recorded-queries-list .list-group-item").removeClass("highlighted-query");
-        $(`#query-${queryId}`).addClass("highlighted-query");
-
-        // Show loader
-        $("#left-loader").show();
-
-        fetch('/search_results', {
-            method: 'POST',
-            body: JSON.stringify({ query_title: queryId, backend_1: leftBackend, backend_2: rightBackend }),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            const backend1Results = $("#results-backend-1");
-            const backend2Results = $("#results-backend-2");
-
-            backend1Results.empty();
-            backend2Results.empty();
-
-            data.backend_1.forEach(recording => {
-                backend1Results.append(`
-                    <li class="list-group-item">
-                        <strong>${recording.title}</strong>
-                        <div class="audio-details">
-                            Similarity: ${recording.similarity} | Duration: ${recording.duration}s
-                        </div>
-                        <audio controls>
-                            <source src="${recording.file}" type="audio/mpeg">
-                        </audio>
-                    </li>
-                `);
-            });
-
-            data.backend_2.forEach(recording => {
-                backend2Results.append(`
-                    <li class="list-group-item">
-                        <strong>${recording.title}</strong>
-                        <div class="audio-details">
-                            Similarity: ${recording.similarity} | Duration: ${recording.duration}s
-                        </div>
-                        <audio preload=none controls>
-                            <source src="${recording.file}" type="audio/mpeg">
-                        </audio>
-                    </li>
-                `);
-            });
-        })
-        .catch(error => {
-            console.error("Error fetching results:", error);
-        })
-        .finally(() => {
-            // Hide loader after fetching results
-            $("#left-loader").hide();
-        });
-    });
-
     $(document).ready(function () {
         // Function to fetch button status from the backend
         function updateButtonStatus(buttonId) {
@@ -386,6 +321,83 @@
         updateButtonStatus("#generate-embeddings-left");
     });
 
+
+    // Function to fetch results from the selected backend
+    function fetchResults(backendId, queryId, resultListId) {
+        // Show loader
+        $("#left-loader").show();
+
+        fetch('/search_results', {
+            method: 'POST',
+            body: JSON.stringify({ backend: backendId, query_title: queryId }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const resultList = $(resultListId);
+            resultList.empty();
+
+            data.results.forEach(recording => {
+                resultList.append(`
+                    <li class="list-group-item">
+                        <strong>${recording.title}</strong>
+                        <div class="audio-details">
+                            Similarity: ${recording.similarity} | Duration: ${recording.duration}s
+                        </div>
+                        <audio controls>
+                            <source src="${recording.file}" type="audio/mpeg">
+                        </audio>
+                    </li>
+                `);
+            });
+        })
+        .catch(error => {
+            console.error("Error fetching results:", error);
+        })
+        .finally(() => {
+            // Hide loader
+            $("#left-loader").hide();
+        });
+    }
+
+    $(document).ready(function () {
+        let selectedQueryId = null;
+
+        // Monitor dropdown changes for Backend 1
+        $("#left-backend").change(function () {
+            const backendId = $(this).val();
+            if (selectedQueryId) {
+                fetchResults(backendId, selectedQueryId, "#results-backend-1");
+            }
+        });
+
+        // Monitor dropdown changes for Backend 2
+        $("#right-backend").change(function () {
+            const backendId = $(this).val();
+            if (selectedQueryId) {
+                fetchResults(backendId, selectedQueryId, "#results-backend-2");
+            }
+        });
+
+        // Update selectedQueryId when a query is submitted
+        $(document).on('click', '.submit-query-btn', function () {
+            selectedQueryId = $(this).data("query-id");
+
+            // Remove highlights from all items
+            $("#recorded-queries-list .list-group-item").removeClass("highlighted-query");
+
+            // Add highlight to the selected item
+            $(`#query-${selectedQueryId}`).addClass("highlighted-query");
+
+            const leftBackend = $("#left-backend").val();
+            const rightBackend = $("#right-backend").val();
+
+            fetchResults(leftBackend, selectedQueryId, "#results-backend-1");
+            fetchResults(rightBackend, selectedQueryId, "#results-backend-2");
+        });
+    });
 </script>
 
 </body>

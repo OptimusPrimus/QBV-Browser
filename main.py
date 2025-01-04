@@ -42,33 +42,22 @@ def delete_query(query_title):
     return jsonify({"error": "Query not found."}), 404
 
 @app.route('/search_results', methods=['POST'])
-def search_results():
+def search_results_backend():
     data = request.json
     query_id = data.get('query_title') ##
-    backend_1 = data.get('backend_1')
-    backend_2 = data.get('backend_2')
-
+    backend = data.get('backend')
     query = next((q for q in get_query_files() if q['title'] == query_id), None)
-
     if not query:
         return jsonify({"error": "Query not found."}), 404
 
-    if CACHED_EMBEDDINGS[backend_1] is None:
+    if CACHED_EMBEDDINGS[backend] is None:
         print("Caching embedding for backend 1...")
-        CACHED_EMBEDDINGS[backend_1] = cache_item_embeddings(backend_1)
-
-    if CACHED_EMBEDDINGS[backend_2] is None:
-        print("Caching embedding for backend 2....")
-        CACHED_EMBEDDINGS[backend_2] = cache_item_embeddings(backend_2)
+        CACHED_EMBEDDINGS[backend] = cache_item_embeddings(backend)
 
     # Get search results from both backends
-    results_backend_1 = rank(backend_1, query, CACHED_EMBEDDINGS[backend_1])[:MAX_RESULTS]
-    results_backend_2 = rank(backend_2, query, CACHED_EMBEDDINGS[backend_2])[:MAX_RESULTS]
+    results_backend = rank(backend, query, CACHED_EMBEDDINGS[backend])[:MAX_RESULTS]
 
-    return jsonify({
-        "backend_1": results_backend_1,
-        "backend_2": results_backend_2
-    })
+    return jsonify({"results": results_backend})
 
 @app.route('/generate_embeddings', methods=['POST'])
 def generate_embeddings():
