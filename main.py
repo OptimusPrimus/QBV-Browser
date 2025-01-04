@@ -7,8 +7,6 @@ from retrieval import cache_item_embeddings, rank, get_retrieval_backends
 app = Flask(__name__)
 
 # Use the 'static/recorded_queries' directory for saving audio files
-UPLOAD_FOLDER = os.path.join('static', 'recorded_queries')
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 CACHED_EMBEDDINGS = {b: cache_item_embeddings(b, load_if_exists=True) for b in get_retrieval_backends()}
 
