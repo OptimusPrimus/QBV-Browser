@@ -55,9 +55,17 @@ def search_results():
     if not query:
         return jsonify({"error": "Query not found."}), 404
 
+    if CACHED_EMBEDDINGS[backend_1] is None:
+        print("Caching embedding for backend 1...")
+        CACHED_EMBEDDINGS[backend_1] = cache_item_embeddings(backend_1)
+
+    if CACHED_EMBEDDINGS[backend_2] is None:
+        print("Caching embedding for backend 2....")
+        CACHED_EMBEDDINGS[backend_2] = cache_item_embeddings(backend_2)
+
     # Get search results from both backends
-    results_backend_1 = rank(backend_1, CACHED_EMBEDDINGS[backend_1], query)
-    results_backend_2 = rank(backend_2, CACHED_EMBEDDINGS[backend_2], query)
+    results_backend_1 = rank(backend_1, query, CACHED_EMBEDDINGS[backend_1])
+    results_backend_2 = rank(backend_2, query, CACHED_EMBEDDINGS[backend_2])
 
     return jsonify({
         "backend_1": results_backend_1,
@@ -71,7 +79,8 @@ def generate_embeddings():
     if backend not in get_retrieval_backends():
         return jsonify({"error": "Backend not found."}), 404
 
-    CACHED_EMBEDDINGS[backend] = cache_item_embeddings(backend)
+    if CACHED_EMBEDDINGS.get(backend) is None or update_needed(CACHED_EMBEDDINGS.get(backend)):
+        CACHED_EMBEDDINGS[backend] = cache_item_embeddings(backend)
 
     # Simulate processing logic
     return jsonify(success=True)

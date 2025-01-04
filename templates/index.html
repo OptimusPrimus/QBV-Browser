@@ -18,7 +18,7 @@
             overflow-y: auto;
         }
         .audio-list-retrieved {
-            max-height: 300px;
+
             overflow-y: auto;
         }
 
@@ -62,8 +62,8 @@
 
         /* Styles for All Audio Recordings list */
         .all-audio-list .list-group-item {
-            background-color: #e9ecef;
-            border-left: 5px solid #007bff;
+            background-color: #f8d7da;
+            border-left: 5px solid #dc3545;
             height: 80px;
         }
 
@@ -76,8 +76,8 @@
 
         /* Styles for Backend Results list */
         .backend-results-list .list-group-item {
-            background-color: #f8d7da;
-            border-left: 5px solid #dc3545;
+            background-color: #e9ecef;
+            border-left: 5px solid #007bff;
             height: 50px;
         }
 
@@ -309,7 +309,7 @@
                     <li class="list-group-item">
                         <strong>${recording.title}</strong>
                         <div class="audio-details">
-                            Duration: ${recording.similarity} | ${recording.duration} | Size: ${recording.size} KB
+                            Similarity: ${recording.similarity} | Duration: ${recording.duration}s
                         </div>
                         <audio controls>
                             <source src="${recording.file}" type="audio/mpeg">
@@ -323,7 +323,7 @@
                     <li class="list-group-item">
                         <strong>${recording.title}</strong>
                         <div class="audio-details">
-                            Duration: ${recording.duration} | Size: ${recording.size} KB
+                            Similarity: ${recording.similarity} | Duration: ${recording.duration}s
                         </div>
                         <audio controls>
                             <source src="${recording.file}" type="audio/mpeg">

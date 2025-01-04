@@ -58,7 +58,7 @@ def update_needed(items):
     files += [f for f in glob(os.path.join(ITEM_FOLDER, '*.mp3'))]
 
     actual_files = set(files)
-    current_files = set([i['file'] for i in items])
+    current_files = set(items.keys())
     return not actual_files == current_files
 
 

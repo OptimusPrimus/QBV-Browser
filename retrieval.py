@@ -1,96 +1,58 @@
-import torch
-import sys
-import torchaudio
-from torch.nn.functional import cosine_similarity
-from backend import get_query_files, get_item_files
+from backend import get_query_files, get_item_files, get_audio_details
+import os
 
-# from qbv.helpers.get_module import get_module
-
-
-def get_VGGish():
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = torch.hub.load('harritaylor/torchvggish', 'vggish')
-    model.postprocess = True
-    model.to(device)
-    model.eval()
-
-    def forward_vggish(audio):
-        audio = audio.numpy()[0]
-        return model(audio, 16000)
-
-    return forward_vggish, 16000
-
-
-def forward_audio(fwd_fun, model_sr, path):
-    audio, sr  = torchaudio.load(path)
-    audio = torchaudio.functional.resample(audio, sr, model_sr)
-    embedding = fwd_fun(audio)
-    return embedding
-
-def forward_batch(backend, batch):
-    if backend == "VGGish":
-        fwd_fun, model_sr = get_VGGish()
-
-    for item in batch:
-        file = item["file"]
-        item['embedding'] = forward_audio(fwd_fun, model_sr, file)
-
-    return batch
-
-def cache_item_embeddings(backend):
-    items = get_item_files()
-    items = forward_batch(backend, items)
-    return items
-
-def compare_embeddings(backend, items, file):
-
-    if backend == "VGGish":
-        fwd_fun, model_sr = get_VGGish()
-
-    q_e = forward_audio(fwd_fun, model_sr, file).mean(0)
-
-    # compute similarity
-    for item in items:
-        item['similarity'] = cosine_similarity(item['embedding'].mean(0)[None], q_e[None])
-
-    # sort by similarity
-    items_light = []
-    for item in sorted(items, key=lambda i: i['similarity'], reverse=True):
-        items_light.append(
-            {
-                "file": item["file"],
-                "title": item["title"],
-                "duration": item["duration"],
-                "size": item["size"],
-                "similarity": round(item["similarity"].item(), 2)
-            }
-        )
-    return items_light
+import retrieval_backends.vggish
+import retrieval_backends.panns
 
 def get_retrieval_backends():
-    return ["2DFFT", "VGGish", "MN"]
+    return ["VGGish", "VGGish-align", "PANNs"]
 
 # Search logic for different backends
-def rank(backend, items, query):
+def rank(backend_id, query, cache):
+
+    query_path = query['file']
+    item_paths = [i['file'] for i in get_item_files()]
+
     # Placeholder search logic
-    if backend == "2DFFT":
-        return sorted(get_item_files(), key=lambda x: x['title'])
-    elif backend == "VGGish":
-        return compare_embeddings(backend, items, query['file'])
-    elif backend == "MN":
-        return get_item_files()
+    if backend_id == "VGGish":
+        similarities = retrieval_backends.vggish.rank_average(item_paths, query_path, cache=cache)
+    elif backend_id == "PANNs":
+        similarities = retrieval_backends.panns.rank_average(item_paths, query_path, cache=cache)
+    elif backend_id == "VGGish-align":
+        similarities = retrieval_backends.vggish.rank_align(item_paths, query_path, cache=cache)
+    else:
+        assert False
+    # sort keys by similarity
+    filenames_ranked = sorted(similarities.keys(), key=lambda x: similarities[x], reverse=True)
+    # create return items
+    items = []
+    for i, f in enumerate(filenames_ranked):
+        d, s = get_audio_details(f)
+        items.append({
+            "title": f.split(os.sep)[-1].split(".")[0],
+            "file": f,
+            "duration": d,
+            "size": s,
+            "similarity": round(similarities[f],2)
+        }
+        )
+    return items
 
-if __name__ == "__main__":
+def cache_item_embeddings(backend_id):
+
+    item_paths = [i['file'] for i in get_item_files()]
+    if backend_id in ["VGGish", "VGGish-align"]:
+        return retrieval_backends.vggish.forward_batch(item_paths)
+    if backend_id in ["PANNs"]:
+        return retrieval_backends.panns.forward_batch(item_paths)
+    else:
+        assert False
 
 
-    items = get_item_files()
-    queries = get_query_files()
 
-    embedding = forward_batch("VGGish", items)
 
-    compare_embeddings("VGGish", items, queries[0]['file'])
 
-    print(embedding)
+
 
 
 
