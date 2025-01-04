@@ -14,7 +14,7 @@
             overflow-y: auto;
         }
         .audio-list-all {
-            height: 80%;
+            height: 90%;
             overflow-y: auto;
         }
         .audio-list-retrieved {
@@ -83,8 +83,8 @@
 
         /* Highlight style for selected query */
         .highlighted-query {
-            background-color: #ffeb99 !important;
-            border-left: 5px solid #ffc107 !important;
+            background-color: #c3c3c0 !important;
+            border-left: 5px solid #1a6c2c !important;
         }
     </style>
 </head>
@@ -133,11 +133,10 @@
 
 
     <!-- Record Query Section -->
-    <h2>Record Query</h2>
     <div id="record-section" class="mb-3">
         <button id="record-btn" class="btn btn-primary">
             <span id="record-icon" style="font-size: 24px;">&#128308;</span>
-            <span id="record-button-text" style="font-size: 24px;">Record</span>
+            <span id="record-button-text" style="font-size: 24px;">Record a Query</span>
 
         </button>
         <audio id="query-audio" controls class="mt-2" hidden></audio>
@@ -167,16 +166,18 @@
 
 
     <!-- Search Results Section -->
-
+<div id="results-loader" class="spinner-border text-primary mt-3" role="status" style="display: none;">
+    <span class="visually-hidden">Loading...</span>
+</div>
     <div class="row">
         <div class="col-md-6">
-            <h4>Results from Backend 1</h4>
+            <h4>Backend 1</h4>
             <div class="audio-list-retrieved">
                 <ul id="results-backend-1" class="list-group backend-results-list"></ul>
             </div>
         </div>
         <div class="col-md-6">
-            <h4>Results from Backend 2</h4>
+            <h4>Backend 2</h4>
             <div class="audio-list-retrieved">
                 <ul id="results-backend-2" class="list-group backend-results-list"></ul>
             </div>
@@ -258,7 +259,7 @@
         } else {
             mediaRecorder.stop();
             $("#record-icon").html("&#128308;");
-            $("#record-button-text").html("Record");
+            $("#record-button-text").html("Record a Query");
             isRecording = false;
         }
     });
@@ -276,6 +277,7 @@
     });
 
     // Submit query for search
+    // Submit query for search
     $(document).on('click', '.submit-query-btn', function () {
         const queryId = $(this).data("query-id");
         const leftBackend = $("#left-backend").val();
@@ -284,6 +286,9 @@
         // Highlight selected query
         $(".recorded-queries-list .list-group-item").removeClass("highlighted-query");
         $(`#query-${queryId}`).addClass("highlighted-query");
+
+        // Show loader
+        $("#results-loader").show();
 
         fetch('/search_results', {
             method: 'POST',
@@ -327,6 +332,13 @@
                     </li>
                 `);
             });
+        })
+        .catch(error => {
+            console.error("Error fetching results:", error);
+        })
+        .finally(() => {
+            // Hide loader after fetching results
+            $("#results-loader").hide();
         });
     });
 
