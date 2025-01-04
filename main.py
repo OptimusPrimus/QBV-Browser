@@ -4,17 +4,23 @@ from datetime import datetime
 import time
 from backend import get_item_files, get_query_files, save_file, delete_file, update_needed
 from retrieval import cache_item_embeddings, rank, get_retrieval_backends
+import random
 app = Flask(__name__)
 
 # Use the 'static/recorded_queries' directory for saving audio files
 MAX_RESULTS = 100
+MAX_ITEM_DISPLAY = 100
 CACHED_EMBEDDINGS = {b: cache_item_embeddings(b) for b in get_retrieval_backends()}
 
 @app.route('/')
 def index():
+    random.seed(13)
+    items = get_item_files()
+    random.shuffle(items)
+
     return render_template(
         'index.html',
-        items=get_item_files()[:10],
+        items=items[:MAX_ITEM_DISPLAY],
         backends=get_retrieval_backends(),
         recorded_queries=get_query_files()
     )

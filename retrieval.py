@@ -39,7 +39,7 @@ def cache_item_embeddings(backend_id):
 
     if os.path.exists(backend_id + '.npz'):
         print("Loading cached item embeddings...")
-        embeddings = np.load(backend_id + '.npz')
+        embeddings = {k:v for k,v in np.load(backend_id + '.npz').items()}
     else:
         print("No embeddings found.")
         embeddings = {}
