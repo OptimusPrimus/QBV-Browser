@@ -21,9 +21,7 @@ Place audios to be retrieved into `static\items` - tested with ESC50
 - [ ] test mp3 support
 - [ ] test handling of longer audio recordings
 - [ ] add QVB backends from DCASE paper
-- [ ] load retrieval for backends individually
-- [ ] set default backend (VGGish & None)
-- [ ] speed up loading of all candidate items
-- [ ] remove duration
-- [ ] make player nicer
-- [ ] align columns in rows
+- [x] load retrieval for backends individually
+- [x] set default backend (VGGish & None)
+- [x] speed up loading of all candidate items
+- [x] remove duration

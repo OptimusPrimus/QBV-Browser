@@ -115,7 +115,7 @@
                     <div>
                         <strong>Query {{ query.title }}</strong>
                         <div class="audio-details">
-                            Duration: {{ query.duration }} | Size: {{ query.size }} KB
+                            Size: {{ query.size }} KB
                         </div>
                     </div>
                     <audio preload=none controls>
@@ -179,7 +179,7 @@
                     <div>
                         <strong>{{ item.title }}</strong>
                         <div class="audio-details">
-                            Duration: {{ item.duration }} | Size: {{ item.size }} KB
+                            Size: {{ item.size }} KB
                         </div>
                     </div>
                     <audio controls preload=none>
@@ -223,7 +223,7 @@
                             <div>
                                 <strong>Query ${data.title}</strong>
                                 <div class="audio-details">
-                                    Duration: ${data.duration} | Size: ${data.size} KB
+                                    Size: ${data.size} KB
                                 </div>
                             </div>
                             <audio preload=none controls>
@@ -355,7 +355,7 @@
                         <li class="list-group-item">
                             <strong>${recording.title}</strong>
                             <div class="audio-details">
-                                Similarity: ${recording.similarity} | Duration: ${recording.duration}s
+                                Similarity: ${recording.similarity}
                             </div>
                             <audio controls>
                                 <source src="${recording.file}" type="audio/mpeg">
