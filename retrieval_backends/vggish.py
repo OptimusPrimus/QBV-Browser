@@ -1,5 +1,6 @@
 import torch
 import torchaudio
+import tqdm
 from torch.nn.functional import cosine_similarity
 
 import numpy as np
@@ -28,7 +29,7 @@ def forward_audio(fwd_fun, model_sr, path):
 def forward_batch(batch):
     fwd_fun, model_sr = get_VGGish()
     embeddings = {}
-    for path in batch:
+    for path in tqdm.tqdm(batch):
         embeddings[path] = forward_audio(fwd_fun, model_sr, path)
     return embeddings
 

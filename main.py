@@ -10,7 +10,7 @@ app = Flask(__name__)
 UPLOAD_FOLDER = os.path.join('static', 'recorded_queries')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-CACHED_EMBEDDINGS = {b: None for b in get_retrieval_backends()}
+CACHED_EMBEDDINGS = {b: cache_item_embeddings(b, load_if_exists=True) for b in get_retrieval_backends()}
 
 @app.route('/')
 def index():
@@ -74,13 +74,10 @@ def search_results():
 
 @app.route('/generate_embeddings', methods=['POST'])
 def generate_embeddings():
-    data = request.json
-    backend = data.get('backend')
-    if backend not in get_retrieval_backends():
-        return jsonify({"error": "Backend not found."}), 404
 
-    if CACHED_EMBEDDINGS.get(backend) is None or update_needed(CACHED_EMBEDDINGS.get(backend)):
-        CACHED_EMBEDDINGS[backend] = cache_item_embeddings(backend)
+    for backend in get_retrieval_backends():
+        if CACHED_EMBEDDINGS.get(backend) is None or update_needed(CACHED_EMBEDDINGS.get(backend)):
+            CACHED_EMBEDDINGS[backend] = cache_item_embeddings(backend, load_if_exists=False)
 
     # Simulate processing logic
     return jsonify(success=True)
@@ -89,14 +86,13 @@ def generate_embeddings():
 def get_button_status(backend):
     # Example logic to determine the status of the backend
     status = "ready"  # Options: "ready", "pending", "error"
-    if CACHED_EMBEDDINGS.get(backend):
-        if update_needed(CACHED_EMBEDDINGS.get(backend)):
-            status = "pending"
+    for backend in get_retrieval_backends():
+        if CACHED_EMBEDDINGS.get(backend):
+            if update_needed(CACHED_EMBEDDINGS.get(backend)):
+                status = "pending"
         else:
-            status = "ready"
-    else:
-        status = "error"
-    return jsonify({"status": status})
+            status = "error"
+        return jsonify({"status": status})
 
 if __name__ == '__main__':
     app.run(debug=True)

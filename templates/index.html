@@ -91,47 +91,6 @@
 <body>
 <div class="container mt-4" id="content">
 
-    <!-- Backend Dropdowns -->
-
-
-
-<div class="row mb-4">
-    <!-- Left Backend Dropdown -->
-    <div class="col-md-6 mb-3">
-        <label for="left-backend" class="form-label">Backend 1</label>
-        <select id="left-backend" class="form-select">
-            {% for backend in backends %}
-                <option value="{{ backend }}">{{ backend }}</option>
-            {% endfor %}
-        </select>
-        <button id="generate-embeddings-left" class="btn btn-danger mt-2">
-            Generate Embeddings
-        </button>
-        <div id="left-loader" class="spinner-border text-primary mt-2" role="status" style="display: none;">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-    </div>
-
-    <!-- Right Backend Dropdown -->
-    <div class="col-md-6 mb-3">
-        <label for="right-backend" class="form-label">Backend 2</label>
-        <select id="right-backend" class="form-select">
-            {% for backend in backends %}
-                <option value="{{ backend }}">{{ backend }}</option>
-            {% endfor %}
-        </select>
-        <button id="generate-embeddings-right" class="btn btn-danger mt-2">
-            Generate Embeddings
-        </button>
-        <div id="right-loader" class="spinner-border text-primary mt-2" role="status" style="display: none;">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-    </div>
-</div>
-
-
-
-
     <!-- Record Query Section -->
     <div id="record-section" class="mb-3">
         <button id="record-btn" class="btn btn-primary">
@@ -140,6 +99,12 @@
 
         </button>
         <audio id="query-audio" controls class="mt-2" hidden></audio>
+        <button id="generate-embeddings-left" class="btn btn-danger">
+            <span style="font-size: 24px;">Generate Embeddings</span>
+        </button>
+        <div id="left-loader" class="spinner-border text-primary mt-2" role="status" style="display: none;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
     </div>
 
     <!-- Recorded Queries -->
@@ -164,6 +129,29 @@
         </ul>
     </div>
 
+    <!-- Backend Dropdowns -->
+    <div class="row mb-4">
+        <!-- Left Backend Dropdown -->
+        <div class="col-md-6 mb-3">
+            <label for="left-backend" class="form-label">Backend 1</label>
+            <select id="left-backend" class="form-select">
+                {% for backend in backends %}
+                    <option value="{{ backend }}">{{ backend }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Right Backend Dropdown -->
+        <div class="col-md-6 mb-3">
+            <label for="right-backend" class="form-label">Backend 2</label>
+            <select id="right-backend" class="form-select">
+                {% for backend in backends %}
+                    <option value="{{ backend }}">{{ backend }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
 
     <!-- Search Results Section -->
 <div id="results-loader" class="spinner-border text-primary mt-3" role="status" style="display: none;">
@@ -171,13 +159,11 @@
 </div>
     <div class="row">
         <div class="col-md-6">
-            <h4>Backend 1</h4>
             <div class="audio-list-retrieved">
                 <ul id="results-backend-1" class="list-group backend-results-list"></ul>
             </div>
         </div>
         <div class="col-md-6">
-            <h4>Backend 2</h4>
             <div class="audio-list-retrieved">
                 <ul id="results-backend-2" class="list-group backend-results-list"></ul>
             </div>
@@ -418,7 +404,6 @@
 
         // Update button colors on page load
         updateButtonStatus("#generate-embeddings-left", "#left-backend");
-        updateButtonStatus("#generate-embeddings-right", "#right-backend");
     });
 
 </script>

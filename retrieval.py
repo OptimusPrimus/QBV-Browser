@@ -1,3 +1,5 @@
+import numpy as np
+
 from backend import get_query_files, get_item_files, get_audio_details
 import os
 
@@ -38,16 +40,24 @@ def rank(backend_id, query, cache):
         )
     return items
 
-def cache_item_embeddings(backend_id):
+def cache_item_embeddings(backend_id, load_if_exists=True):
+
+    if os.path.exists(backend_id + '.npz') and load_if_exists:
+        print("Loading cached item embeddings...")
+        embeddings = np.load(backend_id + '.npz')
+        return embeddings
 
     item_paths = [i['file'] for i in get_item_files()]
     if backend_id in ["VGGish", "VGGish-align"]:
-        return retrieval_backends.vggish.forward_batch(item_paths)
-    if backend_id in ["PANNs"]:
-        return retrieval_backends.panns.forward_batch(item_paths)
+        embeddings = retrieval_backends.vggish.forward_batch(item_paths)
+    elif backend_id in ["PANNs"]:
+        embeddings = retrieval_backends.panns.forward_batch(item_paths)
     else:
         assert False
 
+    np.savez(backend_id + '.npz', **embeddings)
+
+    return embeddings
 
 
 
