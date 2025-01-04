@@ -35,33 +35,29 @@ def rank(backend_id, query, cache):
     print(f"--- {backend_id} query time: {(time.time() - start_time)} seconds ---" )
     return items
 
-def cache_item_embeddings(backend_id, load_if_exists=True):
+def cache_item_embeddings(backend_id):
 
-    if os.path.exists(backend_id + '.npz') and load_if_exists:
+    if os.path.exists(backend_id + '.npz'):
         print("Loading cached item embeddings...")
         embeddings = np.load(backend_id + '.npz')
-        return embeddings
-
-    item_paths = [i['file'] for i in get_item_files()]
-    if backend_id in ["VGGish", "VGGish-align"]:
-        embeddings = retrieval_backends.vggish.forward_batch(item_paths)
-    elif backend_id in ["PANNs"]:
-        embeddings = retrieval_backends.panns.forward_batch(item_paths)
     else:
-        assert False
+        print("No embeddings found.")
+        embeddings = {}
 
-    np.savez(backend_id + '.npz', **embeddings)
+    existing_files = set(embeddings.keys())
+    actual_files = set([i['file'] for i in get_item_files()])
 
+    to_be_embedded = existing_files - actual_files
+
+    if len(to_be_embedded) > 0:
+        to_be_embedded = list(to_be_embedded)
+        if backend_id in ["VGGish", "VGGish-align"]:
+            embeddings_new = retrieval_backends.vggish.forward_batch(to_be_embedded)
+        elif backend_id in ["PANNs"]:
+            embeddings_new = retrieval_backends.panns.forward_batch(to_be_embedded)
+        else:
+            assert False
+        for e in embeddings_new:
+            embeddings[e] = embeddings_new[e]
+        np.savez(backend_id + '.npz', **embeddings)
     return embeddings
-
-
-
-
-
-
-
-
-
-
-
-

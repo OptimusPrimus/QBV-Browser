@@ -102,7 +102,7 @@
         <button id="generate-embeddings-left" class="btn btn-danger">
             <span style="font-size: 24px;">Generate Embeddings</span>
         </button>
-        <div id="left-loader" class="spinner-border text-primary mt-2" role="status" style="display: none;">
+        <div id="left-loader" class="spinner-border text-primary mt-0" role="status" style="display: none;">
             <span class="visually-hidden">Loading...</span>
         </div>
     </div>
@@ -154,9 +154,6 @@
 
 
     <!-- Search Results Section -->
-<div id="results-loader" class="spinner-border text-primary mt-3" role="status" style="display: none;">
-    <span class="visually-hidden">Loading...</span>
-</div>
     <div class="row">
         <div class="col-md-6">
             <div class="audio-list-retrieved">
@@ -273,7 +270,7 @@
         $(`#query-${queryId}`).addClass("highlighted-query");
 
         // Show loader
-        $("#results-loader").show();
+        $("#left-loader").show();
 
         fetch('/search_results', {
             method: 'POST',
@@ -323,21 +320,16 @@
         })
         .finally(() => {
             // Hide loader after fetching results
-            $("#results-loader").hide();
+            $("#left-loader").hide();
         });
     });
 
     $(document).ready(function () {
         // Function to fetch button status from the backend
-        function updateButtonStatus(buttonId, backendDropdownId) {
+        function updateButtonStatus(buttonId) {
             const button = $(buttonId);
-            const backendDropdown = $(backendDropdownId);
 
-            // Fetch button status from the backend
-            const selectedBackend = backendDropdown.val();
-            if (!selectedBackend) return;
-
-            fetch(`/get_button_status/${selectedBackend}`, { method: 'GET' })
+            fetch(`/get_button_status`, { method: 'GET' })
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === "ready") {
@@ -355,25 +347,17 @@
         }
 
         // Function to handle Generate Embeddings button click
-        function handleGenerateEmbeddings(buttonId, loaderId, backendDropdownId) {
+        function handleGenerateEmbeddings(buttonId, loaderId) {
             const button = $(buttonId);
             const loader = $(loaderId);
-            const backendDropdown = $(backendDropdownId);
 
             button.click(function () {
-                const selectedBackend = backendDropdown.val();
-                if (!selectedBackend) {
-                    alert("Please select a backend.");
-                    return;
-                }
-
                 // Show loader and disable button
                 loader.show();
                 button.prop("disabled", true);
-
                 fetch('/generate_embeddings', {
                     method: 'POST',
-                    body: JSON.stringify({ backend: selectedBackend }),
+                    body: JSON.stringify({}),
                     headers: {
                         'Content-Type': 'application/json'
                     }
@@ -383,7 +367,7 @@
                         loader.hide();
                         button.prop("disabled", false);
                         // Update button color based on backend response
-                        updateButtonStatus(buttonId, backendDropdownId);
+                        updateButtonStatus(buttonId);
                     })
                     .catch(error => {
                         console.error("Error generating embeddings:", error);
@@ -392,18 +376,14 @@
                     });
             });
 
-            // Reset button state on backend change
-            backendDropdown.change(function () {
-                updateButtonStatus(buttonId, backendDropdownId);
-            });
+            updateButtonStatus("#generate-embeddings-left");
         }
 
         // Initialize Generate Embeddings for both backends
-        handleGenerateEmbeddings("#generate-embeddings-left", "#left-loader", "#left-backend");
-        handleGenerateEmbeddings("#generate-embeddings-right", "#right-loader", "#right-backend");
+        handleGenerateEmbeddings("#generate-embeddings-left", "#left-loader");
 
         // Update button colors on page load
-        updateButtonStatus("#generate-embeddings-left", "#left-backend");
+        updateButtonStatus("#generate-embeddings-left");
     });
 
 </script>

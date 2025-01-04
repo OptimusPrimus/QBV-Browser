@@ -8,13 +8,13 @@ app = Flask(__name__)
 
 # Use the 'static/recorded_queries' directory for saving audio files
 MAX_RESULTS = 100
-CACHED_EMBEDDINGS = {b: cache_item_embeddings(b, load_if_exists=True) for b in get_retrieval_backends()}
+CACHED_EMBEDDINGS = {b: cache_item_embeddings(b) for b in get_retrieval_backends()}
 
 @app.route('/')
 def index():
     return render_template(
         'index.html',
-        items=get_item_files()[:2000],
+        items=get_item_files()[:10],
         backends=get_retrieval_backends(),
         recorded_queries=get_query_files()
     )
@@ -72,16 +72,15 @@ def search_results():
 
 @app.route('/generate_embeddings', methods=['POST'])
 def generate_embeddings():
-
     for backend in get_retrieval_backends():
         if CACHED_EMBEDDINGS.get(backend) is None or update_needed(CACHED_EMBEDDINGS.get(backend)):
-            CACHED_EMBEDDINGS[backend] = cache_item_embeddings(backend, load_if_exists=False)
+            CACHED_EMBEDDINGS[backend] = cache_item_embeddings(backend)
 
     # Simulate processing logic
     return jsonify(success=True)
 
-@app.route('/get_button_status/<backend>', methods=['GET'])
-def get_button_status(backend):
+@app.route('/get_button_status', methods=['GET'])
+def get_button_status():
     # Example logic to determine the status of the backend
     status = "ready"  # Options: "ready", "pending", "error"
     for backend in get_retrieval_backends():
