@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QBV Browser</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        /* Scrollable lists */
+        .audio-list-queries {
+            height: 200px;
+            overflow-y: auto;
+        }
+        .audio-list-all {
+            height: 80%;
+            overflow-y: auto;
+        }
+        .audio-list-retrieved {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        /* Reduced height for list items */
+        .list-group-item {
+            height: 50px;
+            padding: 10px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .audio-details {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        /* Player size adjustment */
+        audio {
+            width: 100%;
+            max-width: 140px;
+        }
+
+        /* Sidebar styling */
+        #sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 400px;
+            height: 100%;
+            background-color: #f8f9fa;
+            padding: 20px;
+            box-shadow: -2px 0px 5px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+
+        #content {
+            margin-right: 420px; /* Adjust content to the left to accommodate the sidebar */
+        }
+
+        /* Styles for All Audio Recordings list */
+        .all-audio-list .list-group-item {
+            background-color: #e9ecef;
+            border-left: 5px solid #007bff;
+            height: 80px;
+        }
+
+        /* Styles for Recorded Queries list */
+        .recorded-queries-list .list-group-item {
+            background-color: #f1f1f1;
+            border-left: 5px solid #28a745;
+            height: 50px;
+        }
+
+        /* Styles for Backend Results list */
+        .backend-results-list .list-group-item {
+            background-color: #f8d7da;
+            border-left: 5px solid #dc3545;
+            height: 50px;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-4" id="content">
+
+    <!-- Backend Dropdowns -->
+
+
+
+<div class="row mb-4">
+    <!-- Left Backend Dropdown -->
+    <div class="col-md-6 mb-3">
+        <label for="left-backend" class="form-label">Backend 1</label>
+        <select id="left-backend" class="form-select">
+            {% for backend in backends %}
+                <option value="{{ backend }}">{{ backend }}</option>
+            {% endfor %}
+        </select>
+        <button id="generate-embeddings-left" class="btn btn-danger mt-2">
+            Generate Embeddings
+        </button>
+        <div id="left-loader" class="spinner-border text-primary mt-2" role="status" style="display: none;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Right Backend Dropdown -->
+    <div class="col-md-6 mb-3">
+        <label for="right-backend" class="form-label">Backend 2</label>
+        <select id="right-backend" class="form-select">
+            {% for backend in backends %}
+                <option value="{{ backend }}">{{ backend }}</option>
+            {% endfor %}
+        </select>
+        <button id="generate-embeddings-right" class="btn btn-danger mt-2">
+            Generate Embeddings
+        </button>
+        <div id="right-loader" class="spinner-border text-primary mt-2" role="status" style="display: none;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+</div>
+
+
+
+
+    <!-- Record Query Section -->
+    <h2>Record Query</h2>
+    <div id="record-section" class="mb-3">
+        <button id="record-btn" class="btn btn-primary">
+            <span id="record-icon" style="font-size: 24px;">&#128308;</span>
+            <span id="record-button-text" style="font-size: 24px;">Record</span>
+
+        </button>
+        <audio id="query-audio" controls class="mt-2" hidden></audio>
+    </div>
+
+    <!-- Recorded Queries -->
+    <div class="audio-list-queries mb-4">
+        <ul id="recorded-queries-list" class="list-group recorded-queries-list">
+            {% for query in recorded_queries %}
+                <li class="list-group-item" id="query-{{ query.title }}">
+                    <div>
+                        <strong>Query {{ query.title }}</strong>
+                        <div class="audio-details">
+                            Duration: {{ query.duration }} | Size: {{ query.size }} KB
+                        </div>
+                    </div>
+                    <audio controls>
+                        <source src="{{ query.file }}" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                    <button class="btn btn-danger delete-query-btn" data-query-id="{{ query.title }}">Delete</button>
+                    <button class="btn btn-primary submit-query-btn" data-query-id="{{ query.title }}">Submit Query</button>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+
+    <!-- Search Results Section -->
+
+    <div class="row">
+        <div class="col-md-6">
+            <h4>Results from Backend 1</h4>
+            <div class="audio-list-retrieved">
+                <ul id="results-backend-1" class="list-group backend-results-list"></ul>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <h4>Results from Backend 2</h4>
+            <div class="audio-list-retrieved">
+                <ul id="results-backend-2" class="list-group backend-results-list"></ul>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Sidebar for Audio Recordings -->
+<div id="sidebar">
+    <h2>All Items</h2>
+    <div class="audio-list-all mb-4">
+        <ul id="all-audio-list" class="list-group all-audio-list">
+            {% for item in items %}
+                <li class="list-group-item" data-id="{{ item.title }}">
+                    <div>
+                        <strong>{{ item.title }}</strong>
+                        <div class="audio-details">
+                            Duration: {{ item.duration }} | Size: {{ item.size }} KB
+                        </div>
+                    </div>
+                    <audio controls>
+                        <source src="{{ item.file }}" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<script>
+    let isRecording = false;
+    let mediaRecorder;
+    let audioChunks = [];
+
+    // Handle recording
+    $("#record-btn").click(async function () {
+        if (!isRecording) {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+
+            mediaRecorder.start();
+            audioChunks = [];
+            mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                const formData = new FormData();
+                formData.append('audio_data', audioBlob);
+
+                fetch('/record', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const queryList = $("#recorded-queries-list");
+                    queryList.prepend(`
+                        <li class="list-group-item" id="query-${data.title}">
+                            <div>
+                                <strong>Query ${data.title}</strong>
+                                <div class="audio-details">
+                                    Duration: ${data.duration} | Size: ${data.size} KB
+                                </div>
+                            </div>
+                            <audio controls>
+                                <source src="${data.file}" type="audio/wav">
+                            </audio>
+                            <button class="btn btn-danger delete-query-btn" data-query-id="${data.title}">Delete</button>
+                            <button class="btn btn-primary submit-query-btn" data-query-id="${data.title}">Submit Query</button>
+                        </li>
+                    `);
+                });
+            };
+
+            $("#record-icon").html("&#9724;");
+            $("#record-button-text").html("Stop");
+            isRecording = true;
+        } else {
+            mediaRecorder.stop();
+            $("#record-icon").html("&#128308;");
+            $("#record-button-text").html("Record");
+            isRecording = false;
+        }
+    });
+
+    // Delete recorded query
+    $(document).on('click', '.delete-query-btn', function () {
+        const queryId = $(this).data("query-id");
+        fetch(`/delete_query/${queryId}`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    $(`#query-${queryId}`).remove();
+                }
+            });
+    });
+
+    // Submit query for search
+    $(document).on('click', '.submit-query-btn', function () {
+        const queryId = $(this).data("query-id");
+        const leftBackend = $("#left-backend").val();
+        const rightBackend = $("#right-backend").val();
+
+        fetch('/search_results', {
+            method: 'POST',
+            body: JSON.stringify({ query_title: queryId, backend_1: leftBackend, backend_2: rightBackend }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const backend1Results = $("#results-backend-1");
+            const backend2Results = $("#results-backend-2");
+
+            backend1Results.empty();
+            backend2Results.empty();
+
+            data.backend_1.forEach(recording => {
+                backend1Results.append(`
+                    <li class="list-group-item">
+                        <strong>${recording.title}</strong>
+                        <div class="audio-details">
+                            Duration: ${recording.similarity} | ${recording.duration} | Size: ${recording.size} KB
+                        </div>
+                        <audio controls>
+                            <source src="${recording.file}" type="audio/mpeg">
+                        </audio>
+                    </li>
+                `);
+            });
+
+            data.backend_2.forEach(recording => {
+                backend2Results.append(`
+                    <li class="list-group-item">
+                        <strong>${recording.title}</strong>
+                        <div class="audio-details">
+                            Duration: ${recording.duration} | Size: ${recording.size} KB
+                        </div>
+                        <audio controls>
+                            <source src="${recording.file}" type="audio/mpeg">
+                        </audio>
+                    </li>
+                `);
+            });
+        });
+    });
+
+    // Function to handle Generate Embeddings button click
+    function handleGenerateEmbeddings(buttonId, loaderId, backendDropdownId) {
+        const button = $(buttonId);
+        const loader = $(loaderId);
+        const backendDropdown = $(backendDropdownId);
+
+        button.click(function () {
+            const selectedBackend = backendDropdown.val();
+            if (!selectedBackend) {
+                alert("Please select a backend.");
+                return;
+            }
+
+            // Show loader and disable button
+            loader.show();
+            button.prop("disabled", true);
+
+            fetch('/generate_embeddings', {
+                method: 'POST',
+                body: JSON.stringify({ backend: selectedBackend }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Stop loader and enable button
+                    loader.hide();
+                    button.removeClass("btn-danger").addClass("btn-success");
+                    button.prop("disabled", false);
+                })
+                .catch(error => {
+
+                    loader.hide();
+                    button.prop("disabled", false);
+                });
+        });
+
+        // Reset button state on backend change
+        backendDropdown.change(function () {
+            button.removeClass("btn-success").addClass("btn-danger");
+        });
+    }
+
+    // Initialize Generate Embeddings for both backends
+    handleGenerateEmbeddings("#generate-embeddings-left", "#left-loader", "#left-backend");
+    handleGenerateEmbeddings("#generate-embeddings-right", "#right-loader", "#right-backend");
+</script>
+
+</body>
+</html>
+
