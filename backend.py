@@ -53,5 +53,14 @@ def get_item_files():
 def get_query_files():
     return list(reversed(sorted(get_files(QUERY_FOLDER), key=lambda q: q['title'])))
 
+def update_needed(items):
+    files = [f for f in glob(os.path.join(ITEM_FOLDER, '*.wav'))]
+    files += [f for f in glob(os.path.join(ITEM_FOLDER, '*.mp3'))]
+
+    actual_files = set(files)
+    current_files = set([i['file'] for i in items])
+    return not actual_files == current_files
+
+
 if __name__ == '__main__':
     print(get_item_files())

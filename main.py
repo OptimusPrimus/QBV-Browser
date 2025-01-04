@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, jsonify
 import os
 from datetime import datetime
 import time
-from backend import get_item_files, get_query_files, save_file, delete_file
+from backend import get_item_files, get_query_files, save_file, delete_file, update_needed
 from retrieval import cache_item_embeddings, rank, get_retrieval_backends
 app = Flask(__name__)
 
@@ -76,6 +76,18 @@ def generate_embeddings():
     # Simulate processing logic
     return jsonify(success=True)
 
+@app.route('/get_button_status/<backend>', methods=['GET'])
+def get_button_status(backend):
+    # Example logic to determine the status of the backend
+    status = "ready"  # Options: "ready", "pending", "error"
+    if CACHED_EMBEDDINGS.get(backend):
+        if update_needed(CACHED_EMBEDDINGS.get(backend)):
+            status = "pending"
+        else:
+            status = "ready"
+    else:
+        status = "error"
+    return jsonify({"status": status})
 
 if __name__ == '__main__':
     app.run(debug=True)

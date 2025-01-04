@@ -277,7 +277,6 @@
     });
 
     // Submit query for search
-    // Submit query for search
     $(document).on('click', '.submit-query-btn', function () {
         const queryId = $(this).data("query-id");
         const leftBackend = $("#left-backend").val();
@@ -342,53 +341,86 @@
         });
     });
 
-    // Function to handle Generate Embeddings button click
-    function handleGenerateEmbeddings(buttonId, loaderId, backendDropdownId) {
-        const button = $(buttonId);
-        const loader = $(loaderId);
-        const backendDropdown = $(backendDropdownId);
+    $(document).ready(function () {
+        // Function to fetch button status from the backend
+        function updateButtonStatus(buttonId, backendDropdownId) {
+            const button = $(buttonId);
+            const backendDropdown = $(backendDropdownId);
 
-        button.click(function () {
+            // Fetch button status from the backend
             const selectedBackend = backendDropdown.val();
-            if (!selectedBackend) {
-                alert("Please select a backend.");
-                return;
-            }
+            if (!selectedBackend) return;
 
-            // Show loader and disable button
-            loader.show();
-            button.prop("disabled", true);
-
-            fetch('/generate_embeddings', {
-                method: 'POST',
-                body: JSON.stringify({ backend: selectedBackend }),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
+            fetch(`/get_button_status/${selectedBackend}`, { method: 'GET' })
                 .then(response => response.json())
                 .then(data => {
-                    // Stop loader and enable button
-                    loader.hide();
-                    button.removeClass("btn-danger").addClass("btn-success");
-                    button.prop("disabled", false);
+                    if (data.status === "ready") {
+                        button.removeClass("btn-danger btn-warning").addClass("btn-success");
+                    } else if (data.status === "pending") {
+                        button.removeClass("btn-danger btn-success").addClass("btn-warning");
+                    } else {
+                        button.removeClass("btn-success btn-warning").addClass("btn-danger");
+                    }
                 })
                 .catch(error => {
-
-                    loader.hide();
-                    button.prop("disabled", false);
+                    console.error("Error fetching button status:", error);
+                    button.removeClass("btn-success btn-warning").addClass("btn-danger");
                 });
-        });
+        }
 
-        // Reset button state on backend change
-        backendDropdown.change(function () {
-            button.removeClass("btn-success").addClass("btn-danger");
-        });
-    }
+        // Function to handle Generate Embeddings button click
+        function handleGenerateEmbeddings(buttonId, loaderId, backendDropdownId) {
+            const button = $(buttonId);
+            const loader = $(loaderId);
+            const backendDropdown = $(backendDropdownId);
 
-    // Initialize Generate Embeddings for both backends
-    handleGenerateEmbeddings("#generate-embeddings-left", "#left-loader", "#left-backend");
-    handleGenerateEmbeddings("#generate-embeddings-right", "#right-loader", "#right-backend");
+            button.click(function () {
+                const selectedBackend = backendDropdown.val();
+                if (!selectedBackend) {
+                    alert("Please select a backend.");
+                    return;
+                }
+
+                // Show loader and disable button
+                loader.show();
+                button.prop("disabled", true);
+
+                fetch('/generate_embeddings', {
+                    method: 'POST',
+                    body: JSON.stringify({ backend: selectedBackend }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        loader.hide();
+                        button.prop("disabled", false);
+                        // Update button color based on backend response
+                        updateButtonStatus(buttonId, backendDropdownId);
+                    })
+                    .catch(error => {
+                        console.error("Error generating embeddings:", error);
+                        loader.hide();
+                        button.prop("disabled", false);
+                    });
+            });
+
+            // Reset button state on backend change
+            backendDropdown.change(function () {
+                updateButtonStatus(buttonId, backendDropdownId);
+            });
+        }
+
+        // Initialize Generate Embeddings for both backends
+        handleGenerateEmbeddings("#generate-embeddings-left", "#left-loader", "#left-backend");
+        handleGenerateEmbeddings("#generate-embeddings-right", "#right-loader", "#right-backend");
+
+        // Update button colors on page load
+        updateButtonStatus("#generate-embeddings-left", "#left-backend");
+        updateButtonStatus("#generate-embeddings-right", "#right-backend");
+    });
+
 </script>
 
 </body>
