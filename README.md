@@ -1,4 +1,4 @@
-# QBV Browser
+# Query By Vocal Imitation (QBV) Browser
 
 ### Initialize
 - set up environment 
