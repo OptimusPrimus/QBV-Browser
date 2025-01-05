@@ -174,7 +174,7 @@ if __name__ == "__main__":
 
 
 if __name__ == '__main__':
-    e_ = rank_align(['../static/items/014_House_Fan.wav'], '../static/items/014_House_Fan.wav')
+    e_ = rank_align(['../static/items/014_House_Fan.wav'], '../static/items/clotho/014_House_Fan.wav')
     e = forward_batch_align(['../static/items/014_House_Fan.wav'])
     print(e)
 

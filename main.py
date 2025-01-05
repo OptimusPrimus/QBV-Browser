@@ -17,10 +17,11 @@ def index():
     random.seed(13)
     items = get_item_files()
     random.shuffle(items)
+    items = sorted(items[:MAX_ITEM_DISPLAY], key=lambda x: x['title'])
 
     return render_template(
         'index.html',
-        items=items[:MAX_ITEM_DISPLAY],
+        items=items,
         backends=get_retrieval_backends(),
         recorded_queries=get_query_files()
     )
@@ -39,9 +40,9 @@ def record():
     q = save_file(audio_file, file_name)
     return jsonify(q)
 
-@app.route('/delete_query/<query_title>', methods=['POST']) ##
-def delete_query(query_title):
-    query = next((q for q in get_query_files() if q['title'] == query_title), None)
+@app.route('/delete_query/<query_id>', methods=['POST']) ##
+def delete_query(query_id):
+    query = next((q for q in get_query_files() if q['id'] == query_id), None)
     if query:
         delete_file(query)
         return jsonify({"success": True})
@@ -50,9 +51,11 @@ def delete_query(query_title):
 @app.route('/search_results', methods=['POST'])
 def search_results_backend():
     data = request.json
-    query_id = data.get('query_title') ##
+    query_id = data.get('query_id') ##
     backend = data.get('backend')
-    query = next((q for q in get_query_files() if q['title'] == query_id), None)
+    print(query_id)
+    print(get_query_files())
+    query = next((q for q in get_query_files() if q['id'] == query_id), None)
     if not query:
         return jsonify({"error": "Query not found."}), 404
 

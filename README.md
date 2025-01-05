@@ -17,9 +17,9 @@ Place audios to be retrieved into `static\items` - tested with ESC50
   - `get_retrieval_backends()`.
 
 ### TODOs
-- [ ] test GPU support
+- [x] test GPU support
 - [ ] test mp3 support
-- [ ] test handling of longer audio recordings
+- [x] test handling of longer audio recordings
 - [ ] add QVB backends from DCASE paper
 - [x] load retrieval for backends individually
 - [x] set default backend (VGGish & None)

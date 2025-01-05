@@ -111,19 +111,19 @@
     <div class="audio-list-queries mb-4">
         <ul id="recorded-queries-list" class="list-group recorded-queries-list">
             {% for query in recorded_queries %}
-                <li class="list-group-item" id="query-{{ query.title }}">
+                <li class="list-group-item" id="query-{{ query.id }}">
                     <div>
-                        <strong>Query {{ query.title }}</strong>
+                        <strong>{{ query.title }}</strong>
                         <div class="audio-details">
-                            Size: {{ query.size }} KB
+                            Duration: {{ query.duration }} s
                         </div>
                     </div>
                     <audio preload=none controls>
                         <source src="{{ query.file }}" type="audio/mpeg">
                         Your browser does not support the audio element.
                     </audio>
-                    <button class="btn btn-danger delete-query-btn" data-query-id="{{ query.title }}">Delete</button>
-                    <button class="btn btn-primary submit-query-btn" data-query-id="{{ query.title }}">Submit Query</button>
+                    <button class="btn btn-danger delete-query-btn" data-query-id="{{ query.id }}">Delete</button>
+                    <button class="btn btn-primary submit-query-btn" data-query-id="{{ query.id }}">Submit Query</button>
                 </li>
             {% endfor %}
         </ul>
@@ -175,11 +175,11 @@
     <div class="audio-list-all mb-4">
         <ul id="all-audio-list" class="list-group all-audio-list">
             {% for item in items %}
-                <li class="list-group-item" data-id="{{ item.title }}">
+                <li class="list-group-item" data-id="{{ item.id }}">
                     <div>
                         <strong>{{ item.title }}</strong>
                         <div class="audio-details">
-                            Size: {{ item.size }} KB
+                            Duration: {{ item.duration }} s
                         </div>
                     </div>
                     <audio controls preload=none>
@@ -219,18 +219,18 @@
                 .then(data => {
                     const queryList = $("#recorded-queries-list");
                     queryList.prepend(`
-                        <li class="list-group-item" id="query-${data.title}">
+                        <li class="list-group-item" id="query-${data.id}">
                             <div>
-                                <strong>Query ${data.title}</strong>
+                                <strong>${data.title}</strong>
                                 <div class="audio-details">
-                                    Size: ${data.size} KB
+                                    Duration: ${data.duration} s
                                 </div>
                             </div>
                             <audio preload=none controls>
                                 <source src="${data.file}" type="audio/wav">
                             </audio>
-                            <button class="btn btn-danger delete-query-btn" data-query-id="${data.title}">Delete</button>
-                            <button class="btn btn-primary submit-query-btn" data-query-id="${data.title}">Submit Query</button>
+                            <button class="btn btn-danger delete-query-btn" data-query-id="${data.id}">Delete</button>
+                            <button class="btn btn-primary submit-query-btn" data-query-id="${data.id}">Submit Query</button>
                         </li>
                     `);
                 });
@@ -340,7 +340,7 @@
 
             fetch('/search_results', {
                 method: 'POST',
-                body: JSON.stringify({ backend: backendId, query_title: queryId }),
+                body: JSON.stringify({ backend: backendId, query_id: queryId }),
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -393,7 +393,7 @@
 
         $(document).on('click', '.submit-query-btn', function () {
             selectedQueryId = $(this).data("query-id");
-
+            console.log(selectedQueryId)
             $("#recorded-queries-list .list-group-item").removeClass("highlighted-query");
             $(`#query-${selectedQueryId}`).addClass("highlighted-query");
 

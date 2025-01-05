@@ -7,7 +7,7 @@ import retrieval_backends.vggish
 import retrieval_backends.panns
 
 def get_retrieval_backends():
-    return ["VGGish", "PANNs", "PANNs-align"]
+    return ["VGGish", "PANNs"]
 
 # Search logic for different backends
 def rank(backend_id, query, cache):
