@@ -4,8 +4,9 @@
 ```conda env create -f environment.yml```
 
 ### Initialize
-Place audios to be retrieved into `static\items` - see ESC50 in `esc50`
-- `git clone https://github.com/jonathan-greif/qbv.git`
+- Place audios to be retrieved into `static\items` - see ESC50 in `esc50`
+- Clone QBV repository `git clone https://github.com/jonathan-greif/qbv.git`
+
 ### Run
 `python main.py`
 
