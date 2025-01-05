@@ -8,7 +8,7 @@ import random
 app = Flask(__name__)
 
 # Use the 'static/recorded_queries' directory for saving audio files
-MAX_RESULTS = 100
+MAX_RESULTS = 50
 MAX_ITEM_DISPLAY = 100
 CACHED_EMBEDDINGS = {b: cache_item_embeddings(b) for b in get_retrieval_backends()}
 
