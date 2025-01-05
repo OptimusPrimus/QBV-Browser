@@ -6,19 +6,19 @@ from torch.nn.functional import cosine_similarity
 import numpy as np
 from numpy.linalg import norm
 
-def get_VGGish():
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = torch.hub.load('harritaylor/torchvggish', 'vggish')
-    model.postprocess = True
-    model.to(device)
-    model.eval()
+from qbv.helpers.utils_test import get_single_emb, padding
+from qbv.helpers.cqt.cqt import cqt
 
-    def forward_vggish(audio):
-        with torch.no_grad():
-            audio = audio.numpy()[0]
-            return model(audio, 16000).detach().cpu().numpy()
+def get_2DFT(duration=15):
+    def forward_2DFT(audio):
+        audio = audio.numpy()[0]
+        audio = padding(audio, 8000, duration)
+        c = cqt(audio, 12, sr, 55, 2090)
+        audio = c["cqt"]
+        embedding = get_single_emb("", "2DFT", audio)
+        return embedding.numpy()
 
-    return forward_vggish, 16000
+    return forward_2DFT, 8000
 
 def forward_audio(fwd_fun, model_sr, path):
     audio, sr = torchaudio.load(path)
@@ -27,14 +27,14 @@ def forward_audio(fwd_fun, model_sr, path):
     return embedding
 
 def forward_batch(batch):
-    fwd_fun, model_sr = get_VGGish()
+    fwd_fun, model_sr = get_2DFT()
     embeddings = {}
     for path in tqdm.tqdm(batch):
         embeddings[path] = forward_audio(fwd_fun, model_sr, path)
     return embeddings
 
 def rank_average(item_paths, query_path, cache=None):
-    fwd_fun, model_sr = get_VGGish()
+    fwd_fun, model_sr = get_2DFT()
     query_embedding = forward_audio(fwd_fun, model_sr, query_path).mean(0)
 
     # compute similarity
@@ -49,7 +49,7 @@ def rank_average(item_paths, query_path, cache=None):
     return similarities
 
 def rank_align(item_paths, query_path, cache=None):
-    fwd_fun, model_sr = get_VGGish()
+    fwd_fun, model_sr = get_2DFT()
     query_embedding = forward_audio(fwd_fun, model_sr, query_path)
 
     def match_sequences(a, b):
