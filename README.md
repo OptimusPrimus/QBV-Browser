@@ -1,9 +1,9 @@
 # QBV Browser
 
-### Create Environment
-```conda env create -f environment.yml```
-
 ### Initialize
+- set up environment 
+  - `conda env create -f environment.yml` or 
+  - `conda env create -f environment_gpu.yml` or 
 - Place audios to be retrieved into `static\items` - e.g., `esc50`
 - Clone QBV repository `git clone https://github.com/jonathan-greif/qbv.git`
 
@@ -18,16 +18,3 @@
   - `cache_item_embeddings()`, 
   - `rank()`, and 
   - `get_retrieval_backends()`.
-
-### TODOs
-- [ ] add QVB backends from DCASE paper
-- [ ] test mp3 support
-- [x] PANNs
-- [x] VGGish
-- [x] MVGGish
-- [x] test GPU support
-- [x] test handling of longer audio recordings
-- [x] load retrieval for backends individually
-- [x] set default backend (VGGish & None)
-- [x] speed up loading of all candidate items
-- [x] remove duration
