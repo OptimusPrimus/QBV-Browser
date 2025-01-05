@@ -7,7 +7,7 @@ import retrieval_backends.vggish
 import retrieval_backends.panns
 
 def get_retrieval_backends():
-    return ["VGGish", "VGGish-align", "PANNs"]
+    return ["VGGish", "PANNs", "PANNs-align"]
 
 # Search logic for different backends
 def rank(backend_id, query, cache):
@@ -20,6 +20,8 @@ def rank(backend_id, query, cache):
         similarities = retrieval_backends.vggish.rank_average(item_paths, query_path, cache=cache)
     elif backend_id == "PANNs":
         similarities = retrieval_backends.panns.rank_average(item_paths, query_path, cache=cache)
+    elif backend_id == "PANNs-align":
+        similarities = retrieval_backends.panns.rank_align(item_paths, query_path, cache=cache)
     elif backend_id == "VGGish-align":
         similarities = retrieval_backends.vggish.rank_align(item_paths, query_path, cache=cache)
     else:
@@ -54,6 +56,8 @@ def cache_item_embeddings(backend_id):
             embeddings_new = retrieval_backends.vggish.forward_batch(to_be_embedded)
         elif backend_id in ["PANNs"]:
             embeddings_new = retrieval_backends.panns.forward_batch(to_be_embedded)
+        elif backend_id in ["PANNs-align"]:
+            embeddings_new = retrieval_backends.panns.forward_batch_align(to_be_embedded)
         else:
             assert False
         for e in embeddings_new:
