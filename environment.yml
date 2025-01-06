@@ -1,18 +1,23 @@
 name: qbv_browser
 channels:
+  - pytorch
   - defaults
 dependencies:
   - python=3.12
   - flask=3.0.3
-  - pydub
   - ffmpeg
   - torchaudio=2.5.1
   - cpuonly=2.0
+  - pandas
   - torchvision=0.20.1
   - pytorch=2.5.1
   - tqdm
+  - pip
   - pip:
+      - pytorch-lightning==1.9.4
+      - pydub
+      - resampy
       - audioread==3.0.1
       - panns-inference==0.1.1
-      - soundfile=0.13.0
+      - soundfile==0.13.0
 prefix: /home/paul/miniconda3/envs/qbv_browser

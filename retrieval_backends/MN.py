@@ -40,15 +40,15 @@ def forward_batch(batch):
 
 def rank_average(item_paths, query_path, cache=None):
     fwd_fun, model_sr = get_MN()
-    query_embedding = forward_audio(fwd_fun, model_sr, query_path).mean(0)
+    query_embedding = forward_audio(fwd_fun, model_sr, query_path)
 
     # compute similarity
     similarities = {}
     for item_path in item_paths:
         if cache is not None and item_path in cache:
-            item_embedding = cache[item_path].mean(0)
+            item_embedding = cache[item_path]
         else:
-            item_embedding = forward_audio(fwd_fun, model_sr, item_path).mean(0)
+            item_embedding = forward_audio(fwd_fun, model_sr, item_path)
         sim = np.dot(item_embedding, query_embedding) / (norm(item_embedding)*norm(query_embedding))
         similarities[item_path] = sim.item()
     return similarities

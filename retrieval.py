@@ -6,9 +6,12 @@ import time
 import retrieval_backends.vggish
 import retrieval_backends.panns
 import retrieval_backends.mvggish
+import retrieval_backends.twoDFT
+import retrieval_backends.MN
+import retrieval_backends.own
 
 def get_retrieval_backends():
-    return ["VGGish", "PANNs", "M-VGGish"]
+    return ["VGGish", "PANNs", "M-VGGish", "2DFT", "MN", "Own"]
 
 # Search logic for different backends
 def rank(backend_id, query, cache):
@@ -17,8 +20,14 @@ def rank(backend_id, query, cache):
     item_paths = [i['file'] for i in get_item_files()]
 
     # Placeholder search logic
-    if backend_id == "VGGish":
+    if backend_id == "2DFT":
+        similarities = retrieval_backends.twoDFT.rank_average(item_paths, query_path, cache=cache)
+    elif backend_id == "VGGish":
         similarities = retrieval_backends.vggish.rank_average(item_paths, query_path, cache=cache)
+    elif backend_id == "MN":
+        similarities = retrieval_backends.MN.rank_average(item_paths, query_path, cache=cache)
+    elif backend_id == "Own":
+        similarities = retrieval_backends.own.rank_average(item_paths, query_path, cache=cache)
     elif backend_id == "M-VGGish":
         similarities = retrieval_backends.mvggish.rank_average(item_paths, query_path, cache=cache)
     elif backend_id == "PANNs":
@@ -55,7 +64,13 @@ def cache_item_embeddings(backend_id):
 
     if len(to_be_embedded) > 0:
         to_be_embedded = list(to_be_embedded)
-        if backend_id in ["VGGish", "VGGish-align"]:
+        if backend_id == "2DFT":
+            embeddings_new = retrieval_backends.twoDFT.forward_batch(to_be_embedded)
+        elif backend_id == "MN":
+            embeddings_new = retrieval_backends.MN.forward_batch(to_be_embedded)
+        elif backend_id == "Own":
+            embeddings_new = retrieval_backends.own.forward_batch(to_be_embedded)
+        elif backend_id in ["VGGish", "VGGish-align"]:
             embeddings_new = retrieval_backends.vggish.forward_batch(to_be_embedded)
         elif backend_id in ["PANNs"]:
             embeddings_new = retrieval_backends.panns.forward_batch(to_be_embedded)
