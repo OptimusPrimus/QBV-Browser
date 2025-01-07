@@ -10,8 +10,10 @@ import retrieval_backends.twoDFT
 import retrieval_backends.MN
 import retrieval_backends.own
 
+
+
 def get_retrieval_backends():
-    return ["VGGish", "PANNs", "M-VGGish", "2DFT", "MN", "Own"]
+    return ["PANNs", "M-VGGish", "2DFT", "MN", "Own"]
 
 # Search logic for different backends
 def rank(backend_id, query, cache):

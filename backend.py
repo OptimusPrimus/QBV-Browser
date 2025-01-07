@@ -66,8 +66,10 @@ def get_updated_title(name, folder):
         name = name.split('.')[-2]
         c = int(name.split('-')[-1])
         return ESC50_classnames[c]
-    else:
+    elif name == 'item':
         return name[:20]
+    else:
+        return (folder + ' - '+ name)[:20]
 
 
 def build_item_from_path(path):
@@ -142,7 +144,8 @@ def update_needed(items):
 
     actual_files = set(files)
     current_files = set(items.keys())
-    return not actual_files == current_files
+
+    return not (len(actual_files - current_files) == 0)
 
 
 if __name__ == '__main__':

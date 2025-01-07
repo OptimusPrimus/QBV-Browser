@@ -45,6 +45,11 @@ def rank_average(item_paths, query_path, cache=None):
         else:
             item_embedding = forward_audio(fwd_fun, model_sr, item_path)
         sim = np.dot(item_embedding, query_embedding) / (norm(item_embedding)*norm(query_embedding))
+        if np.isnan(sim):
+            print(item_path, item_embedding)
+            print(query_path, query_embedding)
+            print(norm(item_embedding), norm(query_embedding))
+            sim = np.array([0])
         similarities[item_path] = sim.item()
     return similarities
 
@@ -73,3 +78,9 @@ def rank_align(item_paths, query_path, cache=None):
         sim = match_sequences(item_embedding, query_embedding)
         similarities[item_path] = sim.item()
     return similarities
+
+
+if __name__ == '__main__':
+    e_ = rank_average(['../static/items/Breaking/Bones Breaking.wav'], '../static/items/Breaking/Bones Breaking.wav')
+    e = forward_batch(['../static/items/Breaking/Bones Breaking.wav'])
+    print(e)
