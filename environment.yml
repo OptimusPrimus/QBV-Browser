@@ -20,4 +20,3 @@ dependencies:
       - audioread==3.0.1
       - panns-inference==0.1.1
       - soundfile==0.13.0
-prefix: /home/paul/miniconda3/envs/qbv_browser

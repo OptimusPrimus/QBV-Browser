@@ -1,5 +1,7 @@
 name: qbv_browser
 channels:
+  - pytorch
+  - nvidia
   - defaults
 dependencies:
   - pandas
@@ -14,5 +16,4 @@ dependencies:
       - pytorch-lightning==1.9.4
       - audioread==3.0.1
       - panns-inference==0.1.1
-      - soundfile=0.13.0
-prefix: /home/paul/.conda/envs/qbv_browser
+      - soundfile==0.13.0
